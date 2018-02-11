@@ -1,0 +1,70 @@
+DefinitionBlock ("", "SSDT", 1, "NICO", "X299", 0x00000000)
+{
+    External (__PATH__, DeviceObj)    // (from opcode)
+
+
+    Scope (__PATH__)
+      {
+          OperationRegion (PCIS, PCI_Config, Zero, 0x0100)
+          Field (PCIS, AnyAcc, NoLock, Preserve)
+          {
+              PVID,   16,
+              PDID,   16
+          }
+
+          Method (_PRW, 0, NotSerialized)  // _PRW: Power Resources for Wake
+          {
+              Return (GPRW (0x69, 0x04))
+          }
+
+          Method (_DSM, 4, NotSerialized)  // _DSM: Device-Specific Method
+          {
+              Store (Package (0x0E)
+                  {
+                      "built-in",
+                      Buffer (One)
+                      {
+                           0x00
+                      },
+
+                      "device-id",
+                      Buffer (0x04)
+                      {
+                           __DEVICE_ID__
+                      },
+
+                      "AAPL,slot-name",
+                      Buffer (0x07)
+                      {
+                          __SLOT__
+                      },
+
+                      "device_type",
+                      Buffer (0x13)
+                      {
+                          __DEVICE_TYPE__
+                      },
+
+                      "model",
+                      Buffer (0x4A)
+                      {
+                          __MODEL__
+                      },
+
+                      "compatible",
+                      Buffer (0x0D)
+                      {
+                          __COMPATIBLE__
+                      },
+
+                      "name",
+                      Buffer (0x10)
+                      {
+                          __NAME__
+                      }
+                  }, Local0)
+              DTGP (Arg0, Arg1, Arg2, Arg3, RefOf (Local0))
+              Return (Local0)
+        }
+    }
+}
